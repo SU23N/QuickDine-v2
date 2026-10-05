@@ -4,3 +4,13 @@ dist/
 .env
 .env.local
 .DS_Store
+
+functions/node_modules/
+*-debug.log
+firebase-debug.log*
+.firebaserc
+.env.*
+!.env.example
+!functions/.env.example
+playwright-report/
+test-results/
