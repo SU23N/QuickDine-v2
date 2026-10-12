@@ -88,3 +88,12 @@ test("mobile cart has no horizontal overflow and restores focus on close", async
     fullPage: true,
   });
 });
+
+test('restaurant home links preserve the selected workspace instead of reverting to Yash',async({page})=>{
+ await page.goto('/r/other-family-dhaba');
+ await expect(page.locator('.hero .eyebrow')).toContainText('other-family-dhaba');
+ await expect(page.locator('.hero-actions .primary')).toHaveAttribute('href','/r/other-family-dhaba/customer');
+ await expect(page.locator('.hero-actions .secondary')).toHaveAttribute('href','/r/other-family-dhaba/customer?mode=advance-dine-in');
+ await page.locator('.hero-actions .primary').click();
+ await expect(page).toHaveURL(/\/r\/other-family-dhaba\/customer$/);
+});

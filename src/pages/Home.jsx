@@ -2,8 +2,12 @@ import FoodVisual from "../components/FoodVisual";
 import { Link } from "react-router-dom";
 import Nav from "../components/Nav";
 import { useLanguage } from "../lib/i18n";
+import { useTenant } from "../hooks/useTenant";
+import { useRecord } from "../hooks/useSaas";
 export default function Home() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const { restaurantId, path } = useTenant();
+  const { record: restaurant } = useRecord(`restaurants/${restaurantId}`);
   return (
     <>
       <Nav />
@@ -11,15 +15,15 @@ export default function Home() {
         <section className="hero premium">
           <div className="hero-copy">
             <span className="eyebrow">
-              QuickDine • Yash Family ReStra & Dhaba
+              QuickDine • {lang === "hi" && restaurant?.nameHi ? restaurant.nameHi : restaurant?.name || restaurantId}
             </span>
             <h1>{t("homeTitle")}</h1>
             <p>{t("homeBody")}</p>
             <div className="hero-actions">
-              <Link className="primary" to="/customer">
+              <Link className="primary" to={path("customer")}>
                 {t("browse")}
               </Link>
-              <Link className="secondary" to="/customer?mode=advance-dine-in">
+              <Link className="secondary" to={path("customer") + "?mode=advance-dine-in"}>
                 {t("advance")}
               </Link>
             </div>
