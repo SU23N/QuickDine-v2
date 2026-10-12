@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Nav from "../components/Nav";
+import Icon from "../components/Icon";
 import MenuCard from "../components/MenuCard";
 import CartDrawer from "../components/CartDrawer";
 import OrderCard from "../components/OrderCard";
@@ -270,7 +271,7 @@ function CustomerContent({ table, initialMode, setParams }) {
         )}
         <section className="menu-tools">
           <div className="search-box">
-            <span>⌕</span>
+            <Icon name="search"/>
             <input
               aria-label={t("search")}
               value={search}
@@ -291,6 +292,7 @@ function CustomerContent({ table, initialMode, setParams }) {
           {categories.map((c) => (
             <button
               className={activeCategory === c ? "active" : ""}
+              aria-pressed={activeCategory===c}
               key={c}
               onClick={() => setActiveCategory(c)}
             >
@@ -314,6 +316,7 @@ function CustomerContent({ table, initialMode, setParams }) {
             <p>{t("loading")}</p>
           ) : (
             <>
+              <div className="menu-results"><h2>{activeCategory==='All'?(lang==='hi'?'हमारा मेन्यू':'On the menu'):label(menu.find(i=>i.category===activeCategory)||{category:activeCategory},'category',lang)}</h2><span>{filtered.length} {lang==='hi'?'व्यंजन':'dishes'}</span></div>
               <div className="menu-grid">
                 {filtered.map((i) => (
                   <MenuCard
@@ -324,7 +327,7 @@ function CustomerContent({ table, initialMode, setParams }) {
                   />
                 ))}
               </div>
-              {!filtered.length && <p>{t("noResults")}</p>}
+              {!filtered.length && <div className="saas-empty"><Icon name="search" size={30}/><h3>{t('noResults')}</h3><button className="table-action" onClick={()=>{setSearch('');setActiveCategory('All');setVegOnly(false);}}>{lang==='hi'?'फ़िल्टर हटाएँ':'Reset filters'}</button></div>}
             </>
           )}
           {receipt && (

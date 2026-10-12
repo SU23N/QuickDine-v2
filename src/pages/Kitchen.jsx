@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
-import Nav from "../components/Nav";
+import RestaurantFrame from "../components/RestaurantFrame";
+import Icon from "../components/Icon";
 import OrderCard from "../components/OrderCard";
 import KitchenTicket from "../components/KitchenTicket";
 import { useSession } from "../hooks/useSession";
 import { useOrders } from "../hooks/useOrders";
 import { useLanguage } from "../lib/i18n";
-export default function Kitchen() {
+export default function Kitchen({view='kitchen'}) {
   const { staff, user } = useSession(),
     { orders, loading, error } = useOrders(user?.uid, true),
     { t } = useLanguage();
-  const [filter, setFilter] = useState("active"),
+  const waiter=view==='waiter';
+  const [filter, setFilter] = useState(waiter?'ready':"active"),
     [ticket, setTicket] = useState(null);
   useEffect(() => {
     if (ticket) window.print();
@@ -28,15 +30,12 @@ export default function Kitchen() {
   return (
     <>
       <div className="screen-content">
-        <Nav />
-        <main className="dashboard-page">
-          <div className="dashboard-head">
-            <h1>{t("kitchen")}</h1>
-            <span>{staff.role === "waiter" ? t("waiter") : t("kitchen")}</span>
-          </div>
-          <div className="category-strip">
+        <RestaurantFrame title={waiter?t('waiter'):t('kitchen')} section={waiter?'Waiter':'Kitchen'} subtitle={waiter?'Ready dishes, table numbers and service updates in one place.':'Accept orders, prepare dishes and mark them ready for service.'}>
+          <div className="queue-summary">{['new','preparing','ready'].map(status=><button key={status} className={`queue-stat stage-${status} ${filter===status?'selected':''}`} onClick={()=>setFilter(status)}><Icon name={status==='new'?'receipt':status==='preparing'?'chef':'bell'}/><strong>{orders.filter(o=>o.status===status).length}</strong><span>{t(status)}</span></button>)}</div>
+          <div className="category-strip queue-filters">
             <button
               className={filter === "active" ? "active" : ""}
+              aria-pressed={filter==='active'}
               onClick={() => setFilter("active")}
             >
               {t("active")}
@@ -45,6 +44,7 @@ export default function Kitchen() {
               (s) => (
                 <button
                   className={filter === s ? "active" : ""}
+                  aria-pressed={filter===s}
                   key={s}
                   onClick={() => setFilter(s)}
                 >
@@ -59,7 +59,7 @@ export default function Kitchen() {
               {error}
             </p>
           )}
-          {!loading && !visible.length && <p>{t("noOrders")}</p>}
+          {!loading && !visible.length && <div className="saas-empty"><Icon name={waiter?'bell':'chef'} size={36}/><h3>{t('noOrders')}</h3><p>{waiter?'New ready orders will appear here for collection or table service.':'Your queue is clear. New orders will appear here.'}</p></div>}
           <div className="order-grid">
             {visible.map((o) => (
               <OrderCard
@@ -70,7 +70,7 @@ export default function Kitchen() {
               />
             ))}
           </div>
-        </main>
+        </RestaurantFrame>
       </div>
       <KitchenTicket order={ticket} />
     </>

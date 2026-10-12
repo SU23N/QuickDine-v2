@@ -4,7 +4,8 @@ import {useSubscription} from "../hooks/useSaas";
 import { useEffect, useState } from "react";
 import { collection, doc, setDoc, writeBatch } from "firebase/firestore";
 import QRCode from "qrcode";
-import Nav from "../components/Nav";
+import RestaurantFrame from "../components/RestaurantFrame";
+import MenuEditorList from "../components/MenuEditorList";
 import { db } from "../firebase/config";
 import { useRestaurant } from "../hooks/useRestaurant";
 import { useLanguage, label, money } from "../lib/i18n";
@@ -174,10 +175,9 @@ export default function Admin() {
   return (
     <>
       <div className="screen-content">
-        <Nav />
-        <main className="dashboard-page">
+        <RestaurantFrame title={t('admin')} section="Menu & QR" subtitle="Keep dishes, availability and table QR codes ready for service.">
           <div className="dashboard-head">
-            <h1>{t("admin")}</h1>
+            <h2>{lang==='hi'?'मेन्यू और उपलब्धता':'Menu & availability'}</h2>
             <button
               className="primary"
               disabled={busy || !restaurant}
@@ -362,24 +362,7 @@ export default function Admin() {
               </button>
             </form>
           )}
-          <div className="menu-management">
-            {menu.map((i) => (
-              <article className="admin-card" key={i.id}>
-                <h3>{label(i, "name", lang)}</h3>
-                <p>
-                  {money(i.pricePaise)} •{" "}
-                  {i.available ? t("available") : t("unavailable")}
-                </p>
-                <button
-                  className="secondary"
-                  disabled={busy}
-                  onClick={() => start(i)}
-                >
-                  {t("edit")}
-                </button>
-              </article>
-            ))}
-          </div>
+          <MenuEditorList menu={menu} onEdit={start} disabled={busy} onToggle={i=>run(()=>setDoc(doc(db,'restaurants',restaurantId,'menu',i.id),{available:!i.available},{merge:true}))}/>
           {restaurant && (
             <section className="qr-controls">
               <h2>{t("tables")}</h2>
@@ -403,7 +386,7 @@ export default function Admin() {
               </p>
             </section>
           )}
-        </main>
+        </RestaurantFrame>
       </div>
       {codes.length > 0 && (
         <section className="qr-sheet">

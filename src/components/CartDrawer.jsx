@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useLanguage, label, money } from "../lib/i18n";
+import Icon from './Icon';
 export default function CartDrawer({
   open,
   items,
@@ -73,7 +74,7 @@ export default function CartDrawer({
         className={open ? "cart-drawer open" : "cart-drawer"}
       >
         <div className="drawer-head">
-          <h2 id="cart-title">{t("cart")}</h2>
+          <div><h2 id="cart-title">{t("cart")}</h2><p>{items.reduce((count,item)=>count+item.qty,0)} {lang==='hi'?'आइटम':'items'} · {money(total)}</p></div>
           <button
             ref={closeButton}
             aria-label={t("close")}
@@ -81,7 +82,7 @@ export default function CartDrawer({
             disabled={busy}
             onClick={onClose}
           >
-            ×
+            <Icon name="close"/>
           </button>
         </div>
         <form className="cart-form" onSubmit={onSubmit}>

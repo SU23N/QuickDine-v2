@@ -16,8 +16,12 @@ import Setup from "./pages/Setup";
 import SaasHome from "./pages/SaasHome";
 import DemoApp from "./demo/DemoApp";
 export default function App() {
-  if(import.meta.env.VITE_DEMO_WORKSPACE==='true')return <DemoApp/>;
+  if(import.meta.env.VITE_DEMO_WORKSPACE==='true')return <DemoWithLanguage/>;
   return <TenantProvider><LiveApp/></TenantProvider>;
+}
+function DemoWithLanguage(){
+  const language=useLanguageState();
+  return <LanguageContext.Provider value={language}><DemoApp/></LanguageContext.Provider>;
 }
 function LiveApp(){
   const language = useLanguageState(),
@@ -35,6 +39,7 @@ function LiveApp(){
           <Route path="/r/:restaurantId/owner" element={<StaffGate roles={['owner']}><Owner/></StaffGate>}/>
           <Route path="/r/:restaurantId/admin" element={<StaffGate roles={['owner']}><Admin/></StaffGate>}/>
           <Route path="/r/:restaurantId/kitchen" element={<StaffGate roles={['owner','kitchen','waiter']}><Kitchen/></StaffGate>}/>
+          <Route path="/r/:restaurantId/waiter" element={<StaffGate roles={['owner','waiter']}><Kitchen view="waiter"/></StaffGate>}/>
           <Route path="/r/:restaurantId/settings" element={<StaffGate roles={['owner']}><RestaurantSettings/></StaffGate>}/>
           <Route path="/r/:restaurantId/billing" element={<StaffGate roles={['owner']}><RestaurantSettings billing/></StaffGate>}/>
           <Route path="/customer" element={<Customer />} />

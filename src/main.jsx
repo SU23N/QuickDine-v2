@@ -4,6 +4,7 @@ import { BrowserRouter,HashRouter } from "react-router-dom";
 import App from "./App";
 import "./styles.css";
 import "./saas.css";
+import "./ui.css";
 const Router=import.meta.env.VITE_DEMO_WORKSPACE==='true'?HashRouter:BrowserRouter;
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
