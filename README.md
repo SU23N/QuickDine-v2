@@ -4,6 +4,8 @@ QuickDine gives every restaurant its own menu, QR links, kitchen feed, owner wor
 
 ## Review version and live version
 
+[Open the private QuickDine review site](https://quickdine-saas.surennayak1.chatgpt.site).
+
 The private review site is built with `VITE_DEMO_WORKSPACE=true`. It runs entirely in browser storage, includes two clearly marked sample restaurants and makes no Firebase requests or real charges. Its sample Growth price is illustrative. Reset demo data from the console to start again. Demo owner switching is for review; it is not live authentication.
 
 The normal build uses Firebase Authentication, Firestore and server-side callable functions. Without Firebase configuration it provides a labelled customer preview and disables real order submission. Live access requires the project setup and deployment below. Opening this repository, a PR or the private review site does not deploy Firebase.
