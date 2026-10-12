@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import {useLayoutEffect} from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Customer from "./pages/Customer";
 import Kitchen from "./pages/Kitchen";
@@ -16,8 +17,13 @@ import Setup from "./pages/Setup";
 import SaasHome from "./pages/SaasHome";
 import DemoApp from "./demo/DemoApp";
 export default function App() {
-  if(import.meta.env.VITE_DEMO_WORKSPACE==='true')return <DemoWithLanguage/>;
-  return <TenantProvider><LiveApp/></TenantProvider>;
+  if(import.meta.env.VITE_DEMO_WORKSPACE==='true')return <><RouteScroll/><DemoWithLanguage/></>;
+  return <><RouteScroll/><TenantProvider><LiveApp/></TenantProvider></>;
+}
+function RouteScroll(){
+  const {pathname,search}=useLocation();
+  useLayoutEffect(()=>{window.scrollTo({top:0,left:0,behavior:"instant"});},[pathname,search]);
+  return null;
 }
 function DemoWithLanguage(){
   const language=useLanguageState();

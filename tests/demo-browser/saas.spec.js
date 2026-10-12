@@ -24,6 +24,7 @@ test('demo onboarding creates a separate restaurant; owners can update branding 
  await page.getByLabel('Restaurant name',{exact:true}).fill('Updated Family Dhaba');
  await page.getByRole('button',{name:'Save demo branding',exact:true}).click();
  await expect(page.locator('.workspace-pill')).toContainText('Updated Family Dhaba');
+ await page.evaluate(()=>window.scrollTo({top:0,left:0,behavior:"instant"}));
  await page.screenshot({path:info.outputPath('restaurant-branding.png'),fullPage:true});
 });
 test('a table order reaches its own kitchen, persists after refresh and updates owner recorded sales',async({page},info)=>{
@@ -43,6 +44,7 @@ test('a table order reaches its own kitchen, persists after refresh and updates 
  await page.getByRole('button',{name:'Complete service',exact:true}).click();
  await page.getByRole('button',{name:'Record food payment',exact:true}).click();
  await expect(page.locator('.saas-metric').first()).toContainText('₹220.00');
+ await page.evaluate(()=>window.scrollTo({top:0,left:0,behavior:"instant"}));
  await page.screenshot({path:info.outputPath('owner-workspace.png'),fullPage:true});
 });
 test('subscription invoices renew on a recorded demo payment and mobile console does not overflow',async({page},info)=>{
@@ -59,6 +61,7 @@ test('subscription invoices renew on a recorded demo payment and mobile console 
  await page.setViewportSize({width:375,height:812});
  await page.goto('/#/console');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+ await page.evaluate(()=>window.scrollTo({top:0,left:0,behavior:"instant"}));
  await page.screenshot({path:info.outputPath('mobile-console.png'),fullPage:true});
 });
 test('demo QR sheets use scoped customer links and dialogs close with Escape and restore focus',async({page},info)=>{
@@ -71,5 +74,6 @@ test('demo QR sheets use scoped customer links and dialogs close with Escape and
  await expect(page.locator('.demo-qr-grid img')).toHaveCount(20);
  await expect(page.locator('.demo-qr-grid a').first()).toHaveAttribute('href',/yash-bagbahara\/customer\?table=1/);
  await page.goto('/#/console');
+ await page.evaluate(()=>window.scrollTo({top:0,left:0,behavior:"instant"}));
  await page.screenshot({path:info.outputPath('platform-console.png'),fullPage:true});
 });

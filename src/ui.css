@@ -157,6 +157,7 @@ svg { flex-shrink:0; }
 .menu-editor-toolbar { display:grid; grid-template-columns:1.7fr 1fr 1fr; gap:12px; margin:20px 0 12px; }
 .ui-search { display:flex; align-items:center; gap:10px; border:1px solid #dadddc; padding:0 13px; background:#fff; border-radius:8px; color:#7d8d86; min-width:0; }
 .saas-app .ui-search input { border:0; padding-left:0; background:transparent; box-shadow:none; }
+.saas-app .ui-search input:focus-visible { outline:none; }
 .ui-search:focus-within { border-color:#ba7251; box-shadow:0 0 0 3px #dd875918; }
 .menu-editor-summary { font-size:12px; color:#637871; margin:0 0 20px!important; }
 .menu-editor-summary>span { color:#7a8b85; }

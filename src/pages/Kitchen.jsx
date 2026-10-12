@@ -13,6 +13,7 @@ export default function Kitchen({view='kitchen'}) {
   const waiter=view==='waiter';
   const [filter, setFilter] = useState(waiter?'ready':"active"),
     [ticket, setTicket] = useState(null);
+  useEffect(()=>{setFilter(waiter?'ready':'active');setTicket(null);},[waiter]);
   useEffect(() => {
     if (ticket) window.print();
   }, [ticket]);

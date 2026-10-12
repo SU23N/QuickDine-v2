@@ -1,4 +1,4 @@
-import {useRef,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {Link} from 'react-router-dom';
 import MenuCard from '../components/MenuCard';
 import Icon from '../components/Icon';
@@ -7,6 +7,8 @@ import {subscriptionState} from '../../functions/saas-domain';
 import {placeDemoOrder} from './model';
 export default function DemoCustomer({model,restaurant:r,rid,change,error,message,params}) {
   const {lang,setLang,t}=useLanguage(),checkoutRef=useRef(null);
+  const [checkoutVisible,setCheckoutVisible]=useState(false);
+  useEffect(()=>{const observer=new IntersectionObserver(([entry])=>setCheckoutVisible(entry.isIntersecting),{threshold:.1});observer.observe(checkoutRef.current);return()=>observer.disconnect();},[]);
   const [cart,setCart]=useState([]),[category,setCategory]=useState('All'),[search,setSearch]=useState(''),[vegOnly,setVegOnly]=useState(false),[mode,setMode]=useState(params.get('mode')||'table'),[table,setTable]=useState(params.get('table')||''),[name,setName]=useState(''),[phone,setPhone]=useState(''),[time,setTime]=useState(''),[notes,setNotes]=useState(''),[receipt,setReceipt]=useState(null),[requestId,setRequestId]=useState(crypto.randomUUID());
   const menu=model.menus[rid]||[],categories=['All',...new Set(menu.map(i=>i.category))],lines=cart.map(i=>({...menu.find(m=>m.id===i.id),qty:i.qty})),total=lines.reduce((s,i)=>s+i.qty*i.pricePaise,0),count=cart.reduce((s,i)=>s+i.qty,0);
   const filtered=menu.filter(i=>(category==='All'||i.category===category)&&(!vegOnly||i.veg)&&`${i.name} ${i.nameHi||''} ${i.category}`.toLowerCase().includes(search.trim().toLowerCase()));
@@ -34,6 +36,6 @@ export default function DemoCustomer({model,restaurant:r,rid,change,error,messag
       {mode==='table'?<label>Table number<input type="number" min="1" max={r.tableCount} required value={table} onChange={e=>{setTable(e.target.value);setRequestId(crypto.randomUUID());}}/></label>:<><label>Your name<input required autoComplete="name" value={name} onChange={e=>setName(e.target.value)}/></label><label>Mobile number<input required type="tel" autoComplete="tel" value={phone} onChange={e=>setPhone(e.target.value)}/></label><label>Arrival / pickup time (India time)<input required type="datetime-local" value={time} onChange={e=>setTime(e.target.value)}/></label></>}
       <label>Kitchen instructions<textarea placeholder="Any preferences?" value={notes} maxLength="500" onChange={e=>setNotes(e.target.value)}/></label><div className="checkout-total"><span>Total</span><strong>{money(total)}</strong></div><button className="saas-button" disabled={!cart.length||!open}>{lang==='hi'?'डेमो ऑर्डर करें':'Place demo order'}<Icon name="arrow" size={18}/></button><p className="saas-note">Illustrative menu and prices. Demo receipts are not real restaurant orders.</p>
     </form></div></main>
-    {count>0&&<button className="demo-mobile-cart" aria-label="View order" onClick={viewOrder}><span className="mobile-cart-count">{count}</span><span>{lang==='hi'?'ऑर्डर देखें':'View order'}</span><strong>{money(total)}</strong><Icon name="arrow" size={18}/></button>}
+    {count>0&&!checkoutVisible&&<button className="demo-mobile-cart" aria-label="View order" onClick={viewOrder}><span className="mobile-cart-count">{count}</span><span>{lang==='hi'?'ऑर्डर देखें':'View order'}</span><strong>{money(total)}</strong><Icon name="arrow" size={18}/></button>}
   </div>;
 }
