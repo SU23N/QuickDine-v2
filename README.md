@@ -21,7 +21,7 @@ The normal build uses Firebase Authentication, Firestore and server-side callabl
 
 ## Development and checks
 
-Use Node 22 and Java 21 for the emulator checks.
+Use Node 22.12+ or Node 24 for local setup; use Java 21 for the emulator checks. Deployed Cloud Functions use Node 22.
 
 ```sh
 npm ci
@@ -107,4 +107,4 @@ These are one-time **QuickDine subscription** renewals. Restaurant food payments
 - Restaurant ordering requires an active trial/paid period, unsuspended restaurant, correct service hours and remaining monthly quota. Payments do not clear an administrative suspension automatically.
 - Kitchen moves `new → preparing → ready`; waiters complete ready orders; owners can record received food payments. Recorded sales use IST payment date and exclude cancelled orders. Paid food orders cannot be cancelled without a future refund process.
 
-See [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) for the remaining live pilot gates and [VALIDATION.md](VALIDATION.md) for verified checks. Voice ordering, delivery, refunds, tax/service-charge invoices, holiday/weekday schedules and automated recurring subscription debit are outside this release.
+See [SECURITY_NOTES.md](SECURITY_NOTES.md) for the dependency audit scope and remaining CLI tooling findings. See [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) for the remaining live pilot gates and [VALIDATION.md](VALIDATION.md) for verified checks. Voice ordering, delivery, refunds, tax/service-charge invoices, holiday/weekday schedules and automated recurring subscription debit are outside this release.

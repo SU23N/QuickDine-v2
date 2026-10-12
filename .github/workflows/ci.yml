@@ -15,6 +15,9 @@ jobs:
           java-version: "21"
       - run: npm ci
       - run: npm ci --prefix functions
+      - run: npm audit --omit=dev --audit-level=moderate
+      - run: npm audit --audit-level=critical
+      - run: npm audit --prefix functions --audit-level=moderate
       - run: npm test
       - run: npm run build
       - run: npm run test:rules

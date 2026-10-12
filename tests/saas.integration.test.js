@@ -130,3 +130,12 @@ test('signed captured-payment webhooks are idempotent and reject forged or misma
  assert.equal((await db.doc('subscriptions/saas-yash').get()).data().currentPeriodEnd.toMillis(),end);
  assert.equal((await db.collection('subscriptionPayments').get()).size,1);
 });
+
+test('onboarding creates a new owner identity without a shared password and returns private setup',async()=>{
+ const email=`new-owner-${crypto.randomUUID()}@example.test`;
+ const created=await call('createRestaurant',admin,restaurant('new-owner-dhaba',email));
+ assert.ok(created.result,JSON.stringify(created));assert.equal(created.result.ownerEmail,email);assert.ok(created.result.setupLink);
+ const membership=(await db.doc(`memberships/${created.result.ownerUid}/restaurants/new-owner-dhaba`).get()).data();
+ assert.equal(membership.role,'owner');assert.equal(membership.active,true);
+ assert.equal((await db.doc('tenantAccounts/new-owner-dhaba').get()).data().ownerUid,created.result.ownerUid);
+});

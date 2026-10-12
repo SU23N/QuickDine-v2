@@ -24,3 +24,7 @@ The integration harness mounts the actual exported callable functions, verifies 
 The SaaS browser workflows cover onboarding, menu isolation, branding, table order → scoped kitchen → recorded sales, subscription invoices, QR links, native-dialog focus/Escape and mobile overflow. Mobile console, restaurant branding, owner workspace, platform console and Hindi customer/ticket screenshots were reviewed. Browser verification runs in GitHub Actions with Node 22/Java 21/Chromium; no local preview/browser is available in the managed environment.
 
 The private review site runs only the explicitly labelled browser-storage demo. Passing tests and deploying that review site do not prove live Firebase configuration, merchant account activation, real-device/printer compatibility or restaurant pilot completion. No production project deployment, real staff password, real customer order or actual payment was used for local checks.
+
+## Security update 0.3.1
+
+The previous 46-check result above applies to the original SaaS implementation. The dependency update adds a new-owner provisioning check and re-runs the suite with Firebase CLI 15.33.0, Admin SDK 14.5.0 and Functions SDK 7.4.0. Production dependency audits are clear; 3 high findings remain in Firebase CLI glob-watching tooling and are explained in SECURITY_NOTES.md. Updated release CI is in progress.
