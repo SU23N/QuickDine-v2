@@ -1,2 +1,50 @@
-import {Link} from 'react-router-dom';import Nav from '../components/Nav'
-export default function Home(){return <><Nav/><main><section className="hero premium"><div className="hero-copy"><span className="eyebrow">Scan • Order • Enjoy</span><h1>Good food, ordered in seconds.</h1><p>Explore the menu, order from your table and follow every update live.</p><div className="hero-actions"><Link className="primary" to="/customer?table=1">View Menu</Link><a className="secondary" href="#how">How it works</a></div><div className="trust-row"><span>✓ No app required</span><span>✓ Fast table ordering</span><span>✓ Live status</span></div></div><div className="hero-art"><div className="plate">🍽️</div><div className="floating-card card-one">⭐ 4.8 rating</div><div className="floating-card card-two">⚡ Fast ordering</div></div></section><section id="how" className="section"><div className="section-heading"><span className="eyebrow">Simple and fast</span><h2>Three steps to your table</h2></div><div className="steps"><div className="step"><b>01</b><h3>Scan QR</h3><p>Scan the QR placed on your table.</p></div><div className="step"><b>02</b><h3>Choose food</h3><p>Browse dishes, categories and offers.</p></div><div className="step"><b>03</b><h3>Place order</h3><p>Send the order directly to the kitchen.</p></div></div></section></main></>}
+import FoodVisual from "../components/FoodVisual";
+import { Link } from "react-router-dom";
+import Nav from "../components/Nav";
+import { useLanguage } from "../lib/i18n";
+import { useTenant } from "../hooks/useTenant";
+import { useRecord } from "../hooks/useSaas";
+export default function Home() {
+  const { t, lang } = useLanguage();
+  const { restaurantId, path } = useTenant();
+  const { record: restaurant } = useRecord(`restaurants/${restaurantId}`);
+  return (
+    <>
+      <Nav />
+      <main>
+        <section className="hero premium">
+          <div className="hero-copy">
+            <span className="eyebrow">
+              QuickDine • {lang === "hi" && restaurant?.nameHi ? restaurant.nameHi : restaurant?.name || restaurantId}
+            </span>
+            <h1>{t("homeTitle")}</h1>
+            <p>{t("homeBody")}</p>
+            <div className="hero-actions">
+              <Link className="primary" to={path("customer")}>
+                {t("browse")}
+              </Link>
+              <Link className="secondary" to={path("customer") + "?mode=advance-dine-in"}>
+                {t("advance")}
+              </Link>
+            </div>
+            <p>{t("note")}</p>
+          </div>
+          <div className="hero-art">
+            <div className="plate">
+              <FoodVisual
+                item={{
+                  id: "home",
+                  name: "Fresh food",
+                  nameHi: "ताज़ा भोजन",
+                  category: "Main Course",
+                }}
+              />
+            </div>
+            <div className="floating-card card-one">{t("menu")}</div>
+            <div className="floating-card card-two">{t("takeawayMode")}</div>
+          </div>
+        </section>
+      </main>
+    </>
+  );
+}
