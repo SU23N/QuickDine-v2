@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test tests/domain.test.js tests/saas-domain.test.js",
+    "test": "node --test tests/domain.test.js tests/saas-domain.test.js tests/deploy-config.test.js",
     "test:rules": "firebase emulators:exec --only firestore --project demo-quickdine \"node --test tests/firestore.test.js\"",
     "test:integration": "firebase emulators:exec --only auth,firestore --project demo-quickdine \"node --test --test-concurrency=1 tests/integration.test.js tests/saas.integration.test.js\"",
     "test:browser": "playwright test",
