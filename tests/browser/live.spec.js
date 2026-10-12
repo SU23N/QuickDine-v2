@@ -44,6 +44,7 @@ test("customer order reaches kitchen, owner edits live menu, waiter completes an
     openingTime: "00:00",
     closingTime: "23:59",
   });
+  await db.doc(`subscriptions/${root.id}`).set({planId:"pilot",planName:"Pilot",status:"active",currentPeriodEnd:new Date(Date.now()+30*86400000),limits:{maxTables:20,maxStaff:5,maxMonthlyOrders:1000}});
   await root.collection("menu").doc("paneer").set({
     name: "Paneer Butter Masala",
     nameHi: "पनीर बटर मसाला",
@@ -93,6 +94,8 @@ test("customer order reaches kitchen, owner edits live menu, waiter completes an
     await p.getByLabel("Email", { exact: true }).fill(users[role].email);
     await p.getByLabel("Password", { exact: true }).fill(password);
     await p.getByRole("button", { name: "Staff login", exact: true }).click();
+    await expect(p.getByRole("heading",{name:"Choose your workspace."})).toBeVisible();
+    await p.goto("/kitchen");
     await expect(
       p.getByRole("heading", { name: "Kitchen", exact: true }),
     ).toBeVisible();

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { collection, doc, onSnapshot } from "firebase/firestore";
-import { db, configured, restaurantId } from "../firebase/config";
+import { db, configured } from "../firebase/config";
+import {useTenant} from "./useTenant";
 import { menuItems } from "../data/menu";
 const demoMenu = menuItems.map((i) => ({
   ...i,
@@ -9,11 +10,13 @@ const demoMenu = menuItems.map((i) => ({
   available: true,
 }));
 export function useRestaurant() {
+  const {restaurantId}=useTenant();
   const [menu, setMenu] = useState(configured ? [] : demoMenu),
     [restaurant, setRestaurant] = useState(null),
     [loading, setLoading] = useState(configured),
     [error, setError] = useState("");
   useEffect(() => {
+    setRestaurant(null);setMenu(configured?[]:demoMenu);setLoading(configured);setError("");
     if (!db) return;
     const fail = (e) => {
       setError(e.message);
@@ -37,6 +40,6 @@ export function useRestaurant() {
       stopMenu();
       stopRestaurant();
     };
-  }, []);
+  }, [restaurantId]);
   return { menu, restaurant, loading, error, isDemo: !configured };
 }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import Nav from "../components/Nav";
 import { auth, configured } from "../firebase/config";
 import { useLanguage } from "../lib/i18n";
@@ -19,7 +19,7 @@ export default function Login() {
     setError("");
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/kitchen");
+      navigate("/workspace");
     } catch {
       setError("Sign-in failed. Check your email and password.");
     } finally {
@@ -58,6 +58,7 @@ export default function Login() {
             <button className="primary" disabled={busy}>
               {busy ? t("loading") : t("login")}
             </button>
+            <button type="button" className="secondary" disabled={!email||busy} onClick={async()=>{try{await sendPasswordResetEmail(auth,email);setError("If this account exists, a password setup/reset email has been sent.");}catch{setError("Password reset could not start. Check the email address.");}}}>Set / reset your password</button>
             {error && (
               <p className="error" role="alert">
                 {error}

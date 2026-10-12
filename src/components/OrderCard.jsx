@@ -1,8 +1,10 @@
+import {useTenant} from "../hooks/useTenant";
 import { useState } from "react";
 import { useLanguage, label, money, formatTime } from "../lib/i18n";
 import { changeOrder } from "../lib/orders";
 import { canTransition } from "../../functions/domain";
 export default function OrderCard({ order, role, onPrint }) {
+  const {restaurantId}=useTenant();
   const { lang, t } = useLanguage(),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
@@ -10,7 +12,7 @@ export default function OrderCard({ order, role, onPrint }) {
     setBusy(true);
     setError("");
     try {
-      await changeOrder(order.id, changes);
+      await changeOrder(order.id, changes, restaurantId);
     } catch (e) {
       setError(e.message);
     } finally {

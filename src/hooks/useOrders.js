@@ -7,8 +7,10 @@ import {
   limit,
   onSnapshot,
 } from "firebase/firestore";
-import { db, restaurantId } from "../firebase/config";
+import { db } from "../firebase/config";
+import {useTenant} from "./useTenant";
 export function useOrders(uid, staff = false) {
+  const {restaurantId}=useTenant();
   const [orders, setOrders] = useState([]),
     [loading, setLoading] = useState(false),
     [error, setError] = useState("");
@@ -22,7 +24,7 @@ export function useOrders(uid, staff = false) {
     setLoading(true);
     const base = collection(db, "restaurants", restaurantId, "orders");
     const q = staff
-      ? query(base, orderBy("createdAt", "desc"))
+      ? query(base, orderBy("createdAt", "desc"), limit(200))
       : query(
           base,
           where("customerUid", "==", uid),
@@ -41,6 +43,6 @@ export function useOrders(uid, staff = false) {
         setLoading(false);
       },
     );
-  }, [uid, staff]);
+  }, [uid, staff, restaurantId]);
   return { orders, loading, error };
 }

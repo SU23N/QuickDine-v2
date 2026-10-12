@@ -1,20 +1,19 @@
-# Validation — 2 October 2026
+# Validation — 12 October 2026
 
-Base repository: SU23N/QuickDine-v2, main commit e3c3849a67a127a49fd39e046e96fb3fd39f07a1.
+Base: `SU23N/QuickDine-v2`, release commit `ea6527ba7cdbe1ef9ae3fdd79180fc6d093c9bb6`. SaaS completion is prepared on `codex/quickdine-saas-completion-20261012`.
 
-| Check | Result |
-|---|---|
-| Production Vite build | Passed |
-| Order domain tests | 7 passed |
-| Firestore permission/rules tests | 4 passed |
-| Callable HTTP + Auth/Firestore emulator integration tests | 7 passed |
-| Customer preview/mobile browser tests | 4 passed |
-| Full browser workflow against emulators | 1 passed |
+| Check | Status |
+| --- | --- |
+| Production Vite build | Passed locally |
+| Order/SaaS domain tests | 15 passed locally |
+| Firestore permission tests | 7 passed locally |
+| Actual callable HTTP + Auth/Firestore emulator integration | 15 passed locally |
+| Customer preview browser checks | CI verification pending |
+| Live ordering browser checks against emulators | CI verification pending |
+| SaaS review browser workflows + mobile/screenshots | CI verification pending |
 
-**23 tests passed.** The live browser test covers a table order with a deliberately lost HTTP response and receipt recovery without duplication, kitchen preparation/ready transitions and print output, waiter completion and order creation, owner menu price updates and QR generation, Hindi output, recorded payment/sales, advance dine-in and takeaway checkout. Hindi mobile layout and kitchen ticket screenshots were visually inspected. Devanagari fonts are bundled with the app.
+The integration harness mounts the actual exported callable functions, verifies Authentication JWTs and uses real Firestore emulator transactions. Razorpay network responses are stubbed; signatures, trusted invoice comparisons, settlement and webhook idempotency exercise the implementation. Tests never target production Firebase or charge real money.
 
-Cloud Functions worker Unix sockets were unavailable in this execution environment. Integration/browser tests use the actual exported callable HTTP wrappers in an emulator-only Express harness, including Auth token verification and real Firestore emulator transactions. No production Firebase project, real staff accounts, real payments or actual restaurant printer were used.
+The SaaS browser workflows cover onboarding, menu isolation, branding, table order → scoped kitchen → recorded sales, subscription invoices, QR links, native-dialog focus/Escape and mobile overflow. Browser verification runs in GitHub Actions with Node 22/Java 21/Chromium; no local preview/browser is available in the managed environment.
 
-Browser testing used Node 22 and Chromium. Tests do not prove Safari/Android device compatibility or deployed index/configuration correctness. Real Firebase provisioning, deployment, actual-device/printer checks, public-launch abuse protection and a supervised restaurant pilot remain required.
-
-GitHub write access was reauthorized on 5 October 2026 and the release branch was created successfully. This update is submitted for PR review; no merge or production deployment has been performed.
+The private review site runs only the explicitly labelled browser-storage demo. Passing tests and deploying that review site do not prove live Firebase configuration, merchant account activation, real-device/printer compatibility or restaurant pilot completion. No production project deployment, real staff password, real customer order or actual payment was used for local checks.

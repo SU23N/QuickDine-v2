@@ -80,6 +80,7 @@ beforeEach(async () => {
       openingTime: "00:00",
       closingTime: "23:59",
     }),
+    db.doc(`subscriptions/${rid}`).set({planId:"pilot",planName:"Pilot",status:"active",currentPeriodEnd:new Date(Date.now()+30*86400000),limits:{maxTables:20,maxStaff:5,maxMonthlyOrders:1000}}),
     db.doc(`restaurants/${rid}/menu/paneer`).set({
       name: "Paneer",
       nameHi: "पनीर",

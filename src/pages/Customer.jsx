@@ -11,24 +11,28 @@ import { useLanguage, label, money } from "../lib/i18n";
 import { readStored, writeStored } from "../lib/storage";
 import { sendOrder } from "../lib/orders";
 import { withinServiceHours } from "../../functions/domain";
-import { restaurantId } from "../firebase/config";
+import {useTenant} from "../hooks/useTenant";
 export default function Customer() {
   const [params, setParams] = useSearchParams();
+  const {restaurantId}=useTenant();
   const table = params.get("table") || "",
     mode = params.get("mode") || "table";
   return (
     <CustomerContent
-      key={`${table}:${mode}`}
+      key={`${restaurantId}:${table}:${mode}`}
       table={table}
       initialMode={mode}
       setParams={setParams}
     />
   );
 }
+import {millis} from "../../functions/saas-domain";
 function CustomerContent({ table, initialMode, setParams }) {
+  const {restaurantId}=useTenant();
   const { lang, t } = useLanguage(),
     { menu, restaurant, loading, error: menuError, isDemo } = useRestaurant(),
     { user, staff, ensureCustomer } = useSession();
+  const onlineOpen=restaurant?.acceptingOrders===true && restaurant?.status!=="suspended" && restaurant?.serviceAccessState!=="paused" && (restaurant?.orderingAccessUntil==null||millis(restaurant.orderingAccessUntil)>Date.now());
   const key = `quickdine:${restaurantId}:${table || "advance"}:${initialMode}`;
   const saved = useMemo(() => readStored(key, {}), [key]);
   const [activeCategory, setActiveCategory] = useState("All"),
@@ -146,7 +150,7 @@ function CustomerContent({ table, initialMode, setParams }) {
       if (
         !recovery &&
         (isDemo ||
-          restaurant?.acceptingOrders !== true ||
+          onlineOpen !== true ||
           unavailable ||
           !cart.length)
       )
@@ -182,7 +186,7 @@ function CustomerContent({ table, initialMode, setParams }) {
       };
       writeStored(`${key}:pending`, pending);
       setRecovery(pending);
-      const result = await sendOrder({ ...payload, requestId });
+      const result = await sendOrder({ ...payload, requestId }, restaurantId);
       setReceipt(result);
       setCart([]);
       setForm((f) => ({ ...f, instructions: "" }));
@@ -231,7 +235,7 @@ function CustomerContent({ table, initialMode, setParams }) {
           <div className="status-pill">
             {isDemo
               ? t("demo")
-              : restaurant?.acceptingOrders &&
+              : onlineOpen &&
                   withinServiceHours(
                     Date.now(),
                     restaurant.openingTime,
@@ -381,7 +385,7 @@ function CustomerContent({ table, initialMode, setParams }) {
           (isDemo ||
             loading ||
             Boolean(menuError) ||
-            restaurant?.acceptingOrders !== true ||
+            onlineOpen !== true ||
             unavailable)
         }
         isDemo={isDemo}

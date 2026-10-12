@@ -1,56 +1,42 @@
 rules_version = '2';
 service cloud.firestore {
-  match /databases/{database}/documents {
-    function signedIn() { return request.auth != null; }
-    function staff(rid) {
-      return signedIn() && exists(/databases/$(database)/documents/staff/$(request.auth.uid))
-        && get(/databases/$(database)/documents/staff/$(request.auth.uid)).data.active == true
-        && get(/databases/$(database)/documents/staff/$(request.auth.uid)).data.restaurantId == rid
-        && get(/databases/$(database)/documents/staff/$(request.auth.uid)).data.role in ['owner','kitchen','waiter'];
-    }
-    function owner(rid) { return staff(rid) && get(/databases/$(database)/documents/staff/$(request.auth.uid)).data.role == 'owner'; }
-    match /staff/{uid} {
-      allow get: if signedIn() && request.auth.uid == uid;
-      allow list, write: if false;
-    }
-    match /restaurants/{rid} {
-      allow get: if true;
-      allow list: if false;
-      allow create, update: if owner(rid)
-        && request.resource.data.keys().hasOnly(['name','nameHi','acceptingOrders','openingTime','closingTime'])
-        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
-        && request.resource.data.nameHi is string && request.resource.data.nameHi.size() <= 120
-        && request.resource.data.acceptingOrders is bool
-        && request.resource.data.openingTime is string && request.resource.data.openingTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$')
-        && request.resource.data.closingTime is string && request.resource.data.closingTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$')
-        && request.resource.data.openingTime != request.resource.data.closingTime;
-      allow delete: if false;
-      match /menu/{id} {
-        allow read: if true;
-        allow create, update: if owner(rid)
-          && id.matches('^[a-zA-Z0-9_-]{1,80}$')
-          && request.resource.data.keys().hasOnly(['name','nameHi','description','descriptionHi','category','categoryHi','pricePaise','veg','available','emoji'])
-          && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 120
-          && request.resource.data.nameHi is string && request.resource.data.nameHi.size() <= 120
-          && request.resource.data.description is string && request.resource.data.description.size() <= 500
-          && request.resource.data.descriptionHi is string && request.resource.data.descriptionHi.size() <= 500
-          && request.resource.data.category is string && request.resource.data.category.size() > 0 && request.resource.data.category.size() <= 80
-          && request.resource.data.categoryHi is string && request.resource.data.categoryHi.size() <= 80
-          && request.resource.data.emoji is string && request.resource.data.emoji.size() <= 16
-          && request.resource.data.pricePaise is int && request.resource.data.pricePaise > 0 && request.resource.data.pricePaise <= 1000000
-          && request.resource.data.veg is bool && request.resource.data.available is bool;
-        allow delete: if false;
-      }
-      match /tables/{id} {
-        allow read: if true;
-        allow create, update: if owner(rid) && id.matches('^[1-9][0-9]{0,2}$')
-          && request.resource.data.keys().hasOnly(['active']) && request.resource.data.active is bool;
-        allow delete: if false;
-      }
-      match /orders/{id} {
-        allow read: if staff(rid) || (signedIn() && resource.data.customerUid == request.auth.uid);
-        allow write: if false;
-      }
-    }
+ match /databases/{database}/documents {
+  function signedIn() { return request.auth != null; }
+  function platformAdmin() { return signedIn() && exists(/databases/$(database)/documents/platformAdmins/$(request.auth.uid)) && get(/databases/$(database)/documents/platformAdmins/$(request.auth.uid)).data.active == true; }
+  function member(rid) { return /databases/$(database)/documents/restaurants/$(rid)/staff/$(request.auth.uid); }
+  function staff(rid) { return signedIn() && (platformAdmin() || (exists(member(rid)) ? get(member(rid)).data.active == true && get(member(rid)).data.role in ['owner','kitchen','waiter'] : exists(/databases/$(database)/documents/staff/$(request.auth.uid)) && get(/databases/$(database)/documents/staff/$(request.auth.uid)).data.active == true && get(/databases/$(database)/documents/staff/$(request.auth.uid)).data.restaurantId == rid && get(/databases/$(database)/documents/staff/$(request.auth.uid)).data.role in ['owner','kitchen','waiter'])); }
+  function owner(rid) { return signedIn() && (platformAdmin() || (exists(member(rid)) ? get(member(rid)).data.active == true && get(member(rid)).data.role == 'owner' : staff(rid) && get(/databases/$(database)/documents/staff/$(request.auth.uid)).data.role == 'owner')); }
+  function settingsValid(d) { return d.name is string && d.name.size()>0 && d.name.size()<=120 && d.nameHi is string && d.nameHi.size()<=120 && d.acceptingOrders is bool && d.openingTime is string && d.openingTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$') && d.closingTime is string && d.closingTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$') && d.openingTime != d.closingTime; }
+  match /platformAdmins/{uid} { allow get: if signedIn() && request.auth.uid==uid; allow list,write: if false; }
+  match /staff/{uid} { allow get: if signedIn() && request.auth.uid==uid; allow list,write: if false; }
+  match /memberships/{uid}/restaurants/{rid} { allow read: if signedIn() && request.auth.uid==uid; allow write: if false; }
+  match /plans/{id} { allow read: if platformAdmin() || resource.data.enabled == true; allow write: if false; }
+  match /tenantAccounts/{rid} { allow get: if owner(rid); allow list: if platformAdmin(); allow write: if false; }
+  match /subscriptions/{rid} { allow get: if owner(rid); allow list: if platformAdmin(); allow write: if false; }
+  match /invoices/{id} { allow read: if platformAdmin() || owner(resource.data.restaurantId); allow write: if false; }
+  match /subscriptionPayments/{id} { allow read: if platformAdmin() || owner(resource.data.restaurantId); allow write: if false; }
+  match /auditLog/{id} { allow read: if platformAdmin(); allow write: if false; }
+  match /billingReview/{id} { allow read: if platformAdmin(); allow write: if false; }
+  match /restaurants/{rid} {
+   allow get: if true;
+   allow list: if platformAdmin();
+   allow create,delete: if false;
+   allow update: if owner(rid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','nameHi','acceptingOrders','openingTime','closingTime']) && settingsValid(request.resource.data);
+   match /staff/{uid} { allow get: if owner(rid) || (signedIn() && request.auth.uid==uid); allow list: if owner(rid); allow write: if false; }
+   match /menu/{id} {
+    allow read: if true;
+    allow create,update: if owner(rid) && id.matches('^[a-zA-Z0-9_-]{1,80}$') && request.resource.data.keys().hasOnly(['name','nameHi','description','descriptionHi','category','categoryHi','pricePaise','veg','available','emoji'])
+     && request.resource.data.name is string && request.resource.data.name.size()>0 && request.resource.data.name.size()<=120 && request.resource.data.nameHi is string && request.resource.data.nameHi.size()<=120
+     && request.resource.data.description is string && request.resource.data.description.size()<=500 && request.resource.data.descriptionHi is string && request.resource.data.descriptionHi.size()<=500
+     && request.resource.data.category is string && request.resource.data.category.size()>0 && request.resource.data.category.size()<=80 && request.resource.data.categoryHi is string && request.resource.data.categoryHi.size()<=80
+     && request.resource.data.emoji is string && request.resource.data.emoji.size()<=16 && request.resource.data.pricePaise is int && request.resource.data.pricePaise>0 && request.resource.data.pricePaise<=1000000 && request.resource.data.veg is bool && request.resource.data.available is bool;
+    allow delete: if false;
+   }
+   match /tables/{id} { allow read: if true; allow write: if false; }
+   match /orders/{id} { allow read: if staff(rid) || (signedIn() && resource.data.customerUid==request.auth.uid); allow write: if false; }
+   match /usage/{id} { allow read: if owner(rid); allow write: if false; }
+   match /dailyMetrics/{id} { allow read: if owner(rid); allow write: if false; }
+   match /metrics/{id} { allow read: if owner(rid); allow write: if false; }
   }
+ }
 }

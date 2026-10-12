@@ -2,7 +2,9 @@ import { Link } from "react-router-dom";
 import Nav from "./Nav";
 import { useSession } from "../hooks/useSession";
 import { useLanguage } from "../lib/i18n";
+import {useTenant} from "../hooks/useTenant";
 export default function StaffGate({ roles, children }) {
+  const {path}=useTenant();
   const { staff, loading, error } = useSession(),
     { t } = useLanguage();
   if (loading)

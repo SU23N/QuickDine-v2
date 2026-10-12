@@ -1,8 +1,11 @@
+import {useTenant} from "../hooks/useTenant";
+import {callSaas} from "../lib/saas";
+import {useSubscription} from "../hooks/useSaas";
 import { useEffect, useState } from "react";
 import { collection, doc, setDoc, writeBatch } from "firebase/firestore";
 import QRCode from "qrcode";
 import Nav from "../components/Nav";
-import { db, restaurantId } from "../firebase/config";
+import { db } from "../firebase/config";
 import { useRestaurant } from "../hooks/useRestaurant";
 import { useLanguage, label, money } from "../lib/i18n";
 import { menuItems } from "../data/menu";
@@ -48,6 +51,8 @@ const hindiNames = [
   "दाल तड़का",
 ];
 export default function Admin() {
+  const {restaurantId,path}=useTenant();
+  const {record:subscription}=useSubscription();
   const { menu, restaurant, loading, error: loadError } = useRestaurant(),
     { lang, t } = useLanguage();
   const [editing, setEditing] = useState(null),
@@ -124,13 +129,6 @@ export default function Admin() {
   async function initialize() {
     await run(async () => {
       const batch = writeBatch(db);
-      batch.set(root, {
-        name: "Yash Family ReStra & Dhaba",
-        nameHi: "यश फैमिली रेस्टोरेंट एवं ढाबा",
-        acceptingOrders: false,
-        openingTime: "10:00",
-        closingTime: "22:00",
-      });
       if (!menu.length)
         menuItems.forEach((i, index) =>
           batch.set(doc(root, "menu", String(i.id)), {
@@ -146,8 +144,6 @@ export default function Admin() {
             emoji: i.emoji,
           }),
         );
-      for (let n = 1; n <= 20; n++)
-        batch.set(doc(root, "tables", String(n)), { active: true });
       await batch.commit();
     });
   }
@@ -156,14 +152,11 @@ export default function Admin() {
       const count = Number(qrCount);
       if (!Number.isInteger(count) || count < 1 || count > 100)
         throw Error("Choose 1–100 tables.");
-      const batch = writeBatch(db);
-      for (let n = 1; n <= count; n++)
-        batch.set(doc(root, "tables", String(n)), { active: true });
-      await batch.commit();
+      await callSaas('manageRestaurantTables',{restaurantId,count});
       const rows = await Promise.all(
         Array.from({ length: count }, async (_, i) => {
           const table = String(i + 1),
-            url = `${window.location.origin}/customer?table=${table}`;
+            url = `${window.location.origin}${path("customer")}?table=${table}`;
           return {
             table,
             url,
@@ -200,15 +193,16 @@ export default function Admin() {
             </p>
           )}
           {message && <p role="status">{message}</p>}
+          {restaurant && !menu.length && <section className="form-panel"><p>Start with sample dishes, then set your actual prices and availability.</p><button className="secondary" disabled={busy} onClick={initialize}>Add sample menu</button></section>}
           {!restaurant ? (
             <section className="form-panel">
               <p>{t("seedNote")}</p>
               <button
-                disabled={busy || loading || Boolean(loadError)}
+                disabled={true}
                 className="primary"
                 onClick={initialize}
               >
-                {t("initialize")}
+                Restaurant onboarding is managed from the QuickDine platform console.
               </button>
             </section>
           ) : (

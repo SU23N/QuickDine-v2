@@ -9,6 +9,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  updateDoc,
   getDocs,
   collection,
   query,
@@ -157,7 +158,7 @@ test("all client order writes and staff self-promotion are denied", async () => 
     ),
   );
 });
-test("only the restaurant owner writes valid menu prices and table records", async () => {
+test("only owners write valid menu prices; client table writes are denied", async () => {
   const owner = env.authenticatedContext("owner").firestore(),
     waiter = env.authenticatedContext("waiter").firestore();
   await assertSucceeds(
@@ -178,7 +179,7 @@ test("only the restaurant owner writes valid menu prices and table records", asy
   await assertFails(
     setDoc(doc(waiter, "restaurants", rid, "menu", "new-dish"), menu),
   );
-  await assertSucceeds(
+  await assertFails(
     setDoc(doc(owner, "restaurants", rid, "tables", "20"), { active: true }),
   );
   await assertFails(
@@ -205,7 +206,7 @@ test("restaurant hours and accepting-orders settings are owner-only and validate
     "restaurants",
     rid,
   );
-  await assertSucceeds(setDoc(ref, valid));
+  await assertSucceeds(updateDoc(ref, valid));
   await assertFails(setDoc(ref, { ...valid, openingTime: "25:00" }));
   await assertFails(setDoc(ref, { ...valid, closingTime: "10:00" }));
   await assertFails(
@@ -214,4 +215,46 @@ test("restaurant hours and accepting-orders settings are owner-only and validate
       valid,
     ),
   );
+});
+
+test('platform admins list restaurants; owners cannot enumerate competitors or change subscription records',async()=>{
+ await env.withSecurityRulesDisabled(async ctx=>{
+  const db=ctx.firestore();
+  await setDoc(doc(db,'platformAdmins','platform'),{active:true});
+  await setDoc(doc(db,'subscriptions',rid),{status:'active',planId:'pilot'});
+  await setDoc(doc(db,'invoices','invoice'),{restaurantId:rid,status:'unpaid',amountPaise:99900});
+  await setDoc(doc(db,'tenantAccounts',rid),{ownerEmail:'owner@example.test'});
+ });
+ const platform=env.authenticatedContext('platform').firestore(),owner=env.authenticatedContext('owner').firestore(),other=env.authenticatedContext('other-owner').firestore();
+ await assertSucceeds(getDocs(collection(platform,'restaurants')));
+ await assertFails(getDocs(collection(owner,'restaurants')));
+ await assertSucceeds(getDoc(doc(owner,'subscriptions',rid)));
+ await assertFails(getDoc(doc(other,'subscriptions',rid)));
+ await assertFails(getDoc(doc(other,'tenantAccounts',rid)));
+ await assertFails(updateDoc(doc(owner,'subscriptions',rid),{status:'active',currentPeriodEnd:9999999999999}));
+ await assertFails(updateDoc(doc(owner,'invoices','invoice'),{status:'paid'}));
+ await assertFails(setDoc(doc(owner,'platformAdmins','owner'),{active:true}));
+ await assertFails(updateDoc(doc(owner,'restaurants',rid),{status:'active',orderingAccessUntil:9999999999999}));
+});
+test('disabled canonical memberships override old staff records, and membership documents cannot be self-promoted',async()=>{
+ await env.withSecurityRulesDisabled(async ctx=>{
+  const db=ctx.firestore();await setDoc(doc(db,'restaurants',rid,'staff','owner'),{role:'owner',active:false});
+  await setDoc(doc(db,'memberships','owner','restaurants',rid),{role:'owner',active:false,restaurantId:rid});
+ });
+ const owner=env.authenticatedContext('owner').firestore();
+ await assertFails(getDoc(doc(owner,'restaurants',rid,'orders','order1')));
+ await assertSucceeds(getDoc(doc(owner,'memberships','owner','restaurants',rid)));
+ await assertFails(updateDoc(doc(owner,'memberships','owner','restaurants',rid),{active:true}));
+ await assertFails(updateDoc(doc(owner,'restaurants',rid,'staff','owner'),{active:true}));
+});
+test('published plans are public while draft prices and private billing history remain restricted',async()=>{
+ await env.withSecurityRulesDisabled(async ctx=>{
+  const db=ctx.firestore();await setDoc(doc(db,'plans','pilot'),{name:'Pilot',enabled:true});await setDoc(doc(db,'plans','draft'),{name:'Draft',enabled:false});
+ });
+ const pub=env.unauthenticatedContext().firestore();
+ await assertSucceeds(getDoc(doc(pub,'plans','pilot')));
+ await assertFails(getDoc(doc(pub,'plans','draft')));
+ await assertFails(getDocs(collection(pub,'plans')));
+ await assertSucceeds(getDocs(query(collection(pub,'plans'),where('enabled','==',true))));
+ await assertFails(getDocs(collection(pub,'subscriptionPayments')));
 });
