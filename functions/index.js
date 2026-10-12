@@ -142,6 +142,14 @@ export const placeOrder = onCall(options, async (request) => {
           : null,
       });
       return { id: orderRef.id, totalPaise, status: "new" };
+    }).catch(async error => {
+      // Another identical request may have committed while this transaction failed.
+      // Return only a persisted receipt with the same authenticated payload.
+      try {
+        const saved = await orderRef.get();
+        if (saved.exists && saved.data().payloadHash === payloadHash) return receipt(saved);
+      } catch { /* Keep the original failure when receipt recovery is unavailable. */ }
+      throw error;
     });
   } catch (error) {
     translate(error);

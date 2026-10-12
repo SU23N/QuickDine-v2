@@ -20,10 +20,13 @@ jobs:
       - run: npm run test:rules
       - run: npm run test:integration
       - run: npx playwright install --with-deps chromium
+        if: ${{ !cancelled() }}
       - run: npm run test:browser
+        if: ${{ !cancelled() }}
       - run: npm run test:live-browser
+        if: ${{ !cancelled() }}
       - run: npm run test:demo
-        if: ${{ success() || failure() }}
+        if: ${{ !cancelled() }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -40,6 +40,6 @@ export default function PlatformConsole(){
 }
 export function Metric({label,value,note}){return <article className="saas-metric"><span>{label}</span><strong>{value}</strong><small>{note}</small></article>;}
 export function Modal({title,children,onClose}){
- const ref=useRef(null);useEffect(()=>{const dialog=ref.current,prior=document.body.style.overflow;dialog.showModal();document.body.style.overflow='hidden';return()=>{document.body.style.overflow=prior;dialog.close();};},[]);
+ const ref=useRef(null);useEffect(()=>{const dialog=ref.current,prior=document.body.style.overflow,trigger=document.activeElement;dialog.showModal();document.body.style.overflow='hidden';return()=>{document.body.style.overflow=prior;dialog.close();queueMicrotask(()=>{if(trigger?.isConnected)trigger.focus({preventScroll:true});});};},[]);
  return <dialog ref={ref} aria-label={title} className="saas-modal" onCancel={e=>{e.preventDefault();onClose();}} onClick={e=>{const r=e.currentTarget.getBoundingClientRect();if(e.target===e.currentTarget&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom))onClose();}}><div className="panel-head"><h2>{title}</h2><button className="modal-close" aria-label="Close dialog" onClick={onClose}>×</button></div>{children}</dialog>;
 }

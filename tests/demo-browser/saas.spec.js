@@ -30,7 +30,7 @@ test('a table order reaches its own kitchen, persists after refresh and updates 
  await page.goto('/#/r/yash-bagbahara/customer?table=7');
  await page.getByRole('button',{name:'Add +',exact:true}).first().click();
  await page.getByRole('button',{name:'Place demo order',exact:true}).click();
- await expect(page.locator('.saas-success')).toContainText('Demo order saved');
+ await expect(page.locator('p.saas-success')).toContainText('Demo order saved');
  await page.goto('/#/r/yash-bagbahara/kitchen');
  await expect(page.locator('.demo-order-card')).toContainText('Table 7');
  await page.getByRole('button',{name:'Accept order',exact:true}).click();
