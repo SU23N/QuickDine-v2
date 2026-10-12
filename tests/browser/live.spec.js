@@ -172,7 +172,7 @@ test("customer order reaches kitchen, owner edits live menu, waiter completes an
     .click();
   await expect(owner.p.locator(".stat-card").first()).toContainText("₹220.00");
   await expect(owner.p.locator(".order-card")).toContainText("₹220.00");
-  await waiter.p.goto("/customer?table=7");
+  await waiter.p.goto("/customer?table=3");
   await waiter.p.getByRole("button", { name: "Add +", exact: true }).click();
   await waiter.p.getByRole("button", { name: "Cart 1", exact: true }).click();
   await waiter.p

@@ -19,5 +19,5 @@ export function useRecord(path,enabled=true){
   return {record,error};
 }
 export function useSubscription(){const {restaurantId}=useTenant(),{staff}=useSession();return useRecord(`subscriptions/${restaurantId}`,staff?.role==='owner');}
-export function useMetrics(){const {restaurantId}=useTenant();const day=new Date(Date.now()+330*60000).toISOString().slice(0,10);return {daily:useRecord(`restaurants/${restaurantId}/dailyMetrics/${day}`).record,current:useRecord(`restaurants/${restaurantId}/metrics/current`).record};}
+export function useMetrics(){const {restaurantId}=useTenant();const day=new Date(Date.now()+330*60000).toISOString().slice(0,10);const daily=useRecord(`restaurants/${restaurantId}/dailyMetrics/${day}`),current=useRecord(`restaurants/${restaurantId}/metrics/current`);return {daily:daily.record,current:current.record,error:daily.error||current.error};}
 export function saasDate(value){const ms=typeof value?.toMillis==='function'?value.toMillis():typeof value==='number'?value:value?.seconds?value.seconds*1000:0;return ms?new Date(ms).toLocaleDateString('en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short',year:'numeric'}):'—';}
